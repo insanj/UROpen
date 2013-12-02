@@ -26,7 +26,7 @@
 	barItems.leftBarButtonItem = refresh;
 	
 	UIButton *moreButton = [UIButton buttonWithType:UIButtonTypeInfoLight];
-	[moreButton addTarget:self action:@selector(infoTapped) forControlEvents:UIControlEventTouchUpInside];
+	[moreButton addTarget:self action:@selector(openInfo) forControlEvents:UIControlEventTouchUpInside];
 	UIBarButtonItem *moreItem = [[UIBarButtonItem alloc] initWithCustomView:moreButton];
 	barItems.rightBarButtonItem = moreItem;
 	
@@ -64,7 +64,7 @@
 	NSArray *cWeek = @[@"7.0-10.0"];
 	connections.windows = @{@"1": @[@"14.0-22.0"], @"2": cWeek, @"3": cWeek, @"4": cWeek, @"5": cWeek, @"6": @[@"7.0-17.0"], @"7": @[@"sunday"]};
 	connections.plan = @"no passes";
-	//danforth.location = @"43.130033333,-77.626583333";
+	connections.location = @"43.128766667,-77.628166667";
 	[working addObject:connections];
 	
 	URPlace *danforth = [[URPlace alloc] initWithName:@"Danforth"];
@@ -123,7 +123,7 @@
 	NSArray *puraWeek = @[@"7.5-18.5"];
 	pura.windows = @{@"1": @[@"monday"], @"2": puraWeek, @"3": puraWeek, @"4": puraWeek, @"5": puraWeek, @"6": @[@"7.5-14.0"], @"7": @[@"monday"]};
 	pura.plan = @"no passes";
-	//pura.location = @"43.1289,-77.628816667";
+	pura.location = @"43.125333333,-77.629433333";
 	[working addObject:pura];
 	
 	URPlace *starbucks = [[URPlace alloc] initWithName:@"Starbucks"];
@@ -150,8 +150,9 @@
 	
 	titleText = [[UITextView alloc] initWithFrame:CGRectMake(0, 0, 50, 50)];
 	titleText.backgroundColor = [UIColor clearColor];
+	titleText.editable = NO;
 	NSMutableAttributedString *titleStr = [[NSMutableAttributedString alloc] initWithString:@"UROpen" attributes:@{NSFontAttributeName : [UIFont boldSystemFontOfSize:16.f], NSParagraphStyleAttributeName : centered}];
-	[titleStr appendAttributedString:[[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"\n%@:%@ %@", [self appendZerosIfNeeded:fmod(comp.hour, 12)==0?12:fmod(comp.hour, 12)], [self appendZerosIfNeeded:comp.minute], comp.hour>=12?@"pm":@"am"] attributes:@{NSFontAttributeName : [UIFont systemFontOfSize:11.f], NSParagraphStyleAttributeName : centered}]];
+	[titleStr appendAttributedString:[[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"\n➟ %i:%@ %@", fmod(comp.hour, 12)==0?12:((int)fmod(comp.hour, 12)), [self appendZerosIfNeeded:comp.minute], comp.hour>=12?@"pm":@"am"] attributes:@{NSFontAttributeName : [UIFont systemFontOfSize:11.f], NSParagraphStyleAttributeName : centered}]];
 	titleText.attributedText = titleStr;
 	((UINavigationItem *)mainBar.items[0]).titleView = titleText;
 }
@@ -181,33 +182,7 @@
 		[((UINavigationItem *)mainBar.items[0]).leftBarButtonItem setEnabled:YES];
 		[((UINavigationItem *)mainBar.items[0]).rightBarButtonItem setEnabled:YES];
 	});
-	
-	/*
-	CGRect mainFrame = mainCollectionView.frame;
-	mainFrame.origin.y = mainFrame.size.height;
-	[UIView animateWithDuration:0.5 animations:^{
-		[mainCollectionView setFrame:mainFrame];
-	} completion:^(BOOL finished){
-		[mainCollectionView removeFromSuperview];
-		
-		[UIView animateWithDuration:0.5 animations:^{
-			CGRect backFrame = mainFrame;
-			backFrame.origin.y = 0;
-			[self.view insertSubview:mainCollectionView belowSubview:mainBar];
-			[mainCollectionView setFrame:backFrame];
-		}];
-	}];*/
-}
-
--(void)infoTapped{
-	if(mainCollectionView.contentOffset.y <= 60.f || true)
-		[self openInfo];
-	
-	else{
-		info = YES;
-		[mainCollectionView scrollRectToVisible:CGRectMake(0, 0, 1, 1) animated:YES];
-	}
-}
+}//end method
 
 -(void)openInfo{
 	[((UINavigationItem *)mainBar.items[0]).rightBarButtonItem setEnabled:NO];
@@ -228,7 +203,6 @@
 		[self.view addSubview:aboutView];
 	}//end if
 
-	
 	for(UIView *v in mainCollectionView.subviews){
 		[UIView animateWithDuration:0.5 animations:^{
 			CGRect frame = v.frame;
@@ -255,7 +229,7 @@
 		
 		[self.view addSubview:sample];
 		[UIView animateWithDuration:0.5 animations:^{
-			[sample setCenter:CGPointMake(self.view.center.x, self.view.center.y - 50)];
+			[sample setCenter:CGPointMake(self.view.center.x, self.view.center.y - 75)];
 			[aboutView setFrame:CGRectMake(self.view.frame.size.width - 275, self.view.frame.size.height - 225, 250, 250)];
 		} completion:^(BOOL finished){
 			[((UINavigationItem *)mainBar.items[0]).rightBarButtonItem setEnabled:YES];
@@ -338,13 +312,6 @@
 }
 
 #pragma mark - ScrollView and AlertView
--(void)scrollViewDidScroll:(UIScrollView *)scrollView{
-	if(info && scrollView.contentOffset.y <= -60.f){
-		info = NO;
-		[self openInfo];
-	}
-}
-
 -(void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex{
 	if(buttonIndex != alertView.cancelButtonIndex){
 		NSString *location = [@"http://maps.apple.com/?q=" stringByAppendingString:last.location];

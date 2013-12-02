@@ -260,6 +260,9 @@
 				LastUpgradeCheck = 0500;
 				ORGANIZATIONNAME = insanj;
 				TargetAttributes = {
+					9E605C2D184A6B6900A6A429 = {
+						DevelopmentTeam = 24X8MVUSCN;
+					};
 					9E605C51184A6B6A00A6A429 = {
 						TestTargetID = 9E605C2D184A6B6900A6A429;
 					};
@@ -447,7 +450,7 @@
 		9E605C64184A6B6A00A6A429 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "iPhone Distribution: Julian Weiss (24X8MVUSCN)";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "UROpen/UROpen-Prefix.pch";
 				INFOPLIST_FILE = "UROpen/UROpen-Info.plist";
@@ -462,7 +465,7 @@
 		9E605C65184A6B6A00A6A429 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "iPhone Distribution: Julian Weiss (24X8MVUSCN)";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "UROpen/UROpen-Prefix.pch";
 				INFOPLIST_FILE = "UROpen/UROpen-Info.plist";
