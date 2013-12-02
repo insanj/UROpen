@@ -113,8 +113,18 @@
 	NSArray *best;
 	
 	for(NSArray *w in [dateWindows objectForKey:@([gregorian components:NSWeekdayCalendarUnit fromDate:date].weekday).stringValue]){
-		if([w[0] isKindOfClass:NSString.class])
-			return w[0];
+		if([w[0] isKindOfClass:NSString.class]){
+			int nextDay = fmod([gregorian components:NSWeekdayCalendarUnit fromDate:date].weekday+1,7)==0?7:fmod([gregorian components:NSWeekdayCalendarUnit fromDate:date].weekday+1,7);
+			NSArray *nextWindows = [dateWindows objectForKey:@(nextDay).stringValue];
+			NSArray *firstWindowInNext = nextWindows[0][0];
+			NSDate *firstOpenDateInNext = firstWindowInNext[0];
+			NSDate *firstClosedDateInNext = firstWindowInNext[1];
+
+			if([[firstOpenDateInNext laterDate:date] isEqualToDate:date])
+				return [self open:firstOpenDateInNext andClosedDateToString:firstClosedDateInNext];
+			else
+				return w[0];
+		}//end if
 		
 		for(NSArray *ww in w){
 			NSDate *open = ww[0];
@@ -132,35 +142,6 @@
 		}//end for
 	
 	return [self open:best[0] andClosedDateToString:best[1]];
-	
-	/*
-	NSCalendar *gregorian = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
-	NSCalendar *calendar = [NSCalendar currentCalendar];
-	NSDateComponents *givenComponents = [calendar components:(NSHourCalendarUnit | NSMinuteCalendarUnit) fromDate:date];
-	
-	float curr =  [givenComponents hour] + [givenComponents minute]/60;
-	NSString *day = @([gregorian components:NSWeekdayCalendarUnit fromDate:date].weekday).stringValue;
-	if([[windows[day] firstObject] rangeOfString:@"-"].location == NSNotFound)
-		return [windows[day] firstObject];
-	
-	if(curr > [[[windows[day] lastObject] componentsSeparatedByString:@"-"][1] floatValue]){
-		day = @(fmod([gregorian components:NSWeekdayCalendarUnit fromDate:date].weekday+1, 7)>0?fmod([gregorian components:NSWeekdayCalendarUnit fromDate:date].weekday + 1, 7):1).stringValue;
-		NSArray *a = [[windows[day] firstObject] componentsSeparatedByString:@"-"];
-		return [NSString stringWithFormat:@"%@:%@ - %@:%@", [self appendZerosIfNeeded:(int)[a[0] floatValue]], [self appendZerosIfNeeded:fmod([a[0] floatValue]*60, 60)], [self appendZerosIfNeeded:(int)[a[1] floatValue]], [self appendZerosIfNeeded:fmod([a[1] floatValue]*60, 60)]];
-	}//end if
-	
-	for(NSString *s in windows[day]){
-		NSArray *comp = [s componentsSeparatedByString:@"-"];
-		float open = [comp[0] floatValue];
-		float closed = [comp[1] floatValue];
-		
-		if(closed < curr)
-			continue;
-		
-		return [NSString stringWithFormat:@"%@:%@ - %@:%@", [self appendZerosIfNeeded:(int)open], [self appendZerosIfNeeded:fmod(open*60, 60)], [self appendZerosIfNeeded:(int)closed], [self appendZerosIfNeeded:fmod(closed*60, 60)]];
-	}//end for
-	
-	return nil;*/
 }
 
 -(NSString *)open:(NSDate *)first andClosedDateToString:(NSDate *)second {

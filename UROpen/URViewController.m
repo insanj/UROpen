@@ -194,7 +194,7 @@
 		[((UINavigationItem *)mainBar.items[0]).leftBarButtonItem setEnabled:NO];
 		aboutView = [[UIView alloc] initWithFrame:CGRectMake(self.view.frame.size.width, self.view.frame.size.height, 250, 250)];
 		UITextView *aboutText = [[UITextView alloc] initWithFrame:CGRectMake(0, 0, 250, 250)];
-		aboutText.text = @"UROpen was made with love by Julian (insanj) Weiss for fellow UofR-ers.\n\nBorn in late fall 2013, and meant to be free forever.\n\nVersion 1.0\n © 2013 Julian Weiss";
+		aboutText.text = @"UROpen was made with love by Julian (insanj) Weiss for fellow UofR-ers.\n\nBorn over the course of Thanksgiving Break '13, and meant to be free forever.\n\nVersion 1.0\n © 2013 Julian Weiss";
 		aboutText.backgroundColor = [UIColor clearColor];
 		aboutText.font = [UIFont systemFontOfSize:18.f];
 		aboutText.textAlignment = NSTextAlignmentJustified;
@@ -230,7 +230,7 @@
 		[self.view addSubview:sample];
 		[UIView animateWithDuration:0.5 animations:^{
 			[sample setCenter:CGPointMake(self.view.center.x, self.view.center.y - 75)];
-			[aboutView setFrame:CGRectMake(self.view.frame.size.width - 275, self.view.frame.size.height - 225, 250, 250)];
+			[aboutView setFrame:CGRectMake(self.view.frame.size.width - 275, self.view.frame.size.height - 235, 250, 250)];
 		} completion:^(BOOL finished){
 			[((UINavigationItem *)mainBar.items[0]).rightBarButtonItem setEnabled:YES];
 		}];
@@ -292,7 +292,7 @@
 	}
 		
 	if(![curr openForDate:[NSDate date]])
-		cell.alpha = 0.5;
+		cell.alpha = 0.25;
 	
     UILabel *titleLabel = (UILabel *)[cell viewWithTag:2];
 	titleLabel.adjustsFontSizeToFitWidth = YES;
