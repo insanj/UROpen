@@ -47,8 +47,8 @@
 			NSDateComponents *closedDateComp = [calendar components:(NSYearCalendarUnit | NSMonthCalendarUnit | NSDayCalendarUnit | NSHourCalendarUnit | NSMinuteCalendarUnit | NSSecondCalendarUnit) fromDate:[NSDate date]];
 			[closedDateComp setHour:closedHour];
 			[closedDateComp setMinute:closedMinute];
-			
 			NSDate *closedDate = [calendar dateFromComponents:closedDateComp];
+			
 			if([[closedDate earlierDate:openDate] isEqualToDate:closedDate]){
 				NSDateComponents *dayComponent = [[NSDateComponents alloc] init];
 				dayComponent.day = 1;
@@ -68,7 +68,21 @@
 -(BOOL)openForDate:(NSDate *)date{
 	NSCalendar *gregorian = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
 	NSString *weekday = @([gregorian components:NSWeekdayCalendarUnit fromDate:date].weekday).stringValue;
+	int prevDay = fmod([gregorian components:NSWeekdayCalendarUnit fromDate:date].weekday-1,7)==0?7:fmod([gregorian components:NSWeekdayCalendarUnit fromDate:date].weekday-1,7);
 
+	for(NSArray *w in [dateWindows objectForKey:@(prevDay).stringValue]){
+		if([w[0] isKindOfClass:NSString.class])
+			continue;
+		
+		for(NSArray *ww in w){
+			NSDate *open = ww[0];
+			NSDate *closed = ww[1];
+			
+			if([[open earlierDate:date] isEqualToDate:open] && [[closed laterDate:date] isEqualToDate:closed])
+				return YES;
+		}
+	}
+	
 	for(NSArray *w in [dateWindows objectForKey:weekday]){
 		if([w[0] isKindOfClass:NSString.class])
 			return NO;
@@ -83,25 +97,6 @@
 	}//end for
 	
 	return NO;
-	
-	/*
-	NSCalendar *gregorian = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
-	NSCalendar *calendar = [NSCalendar currentCalendar];
-	NSDateComponents *givenComponents = [calendar components:(NSHourCalendarUnit | NSMinuteCalendarUnit) fromDate:date];
-	for(NSString *s in windows[@([gregorian components:NSWeekdayCalendarUnit fromDate:date].weekday).stringValue]){
-		if([s rangeOfString:@"-"].location == NSNotFound)
-			return NO;
-		
-		NSArray *comp = [s componentsSeparatedByString:@"-"];
-		float open = [comp[0] integerValue];
-		float closed = [comp[1] floatValue];
-		float curr =  [givenComponents hour] + [givenComponents minute]/60;
-		
-		if(fmod(open, 12) <= curr && fmod(closed, 12) >= curr)
-			return YES;
-	}
-	
-	return NO;*/
 }
 
 -(NSString *)descForDate:(NSDate *)date{
@@ -110,37 +105,46 @@
 
 -(NSString *)nextWindowForDate:(NSDate *)date{
 	NSCalendar *gregorian = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
+	NSString *currDay = @([gregorian components:NSWeekdayCalendarUnit fromDate:date].weekday).stringValue;
+	int nextDay = fmod([gregorian components:NSWeekdayCalendarUnit fromDate:date].weekday+1,7)==0?7:fmod([gregorian components:NSWeekdayCalendarUnit fromDate:date].weekday+1,7);
 	NSArray *best;
 	
-	for(NSArray *w in [dateWindows objectForKey:@([gregorian components:NSWeekdayCalendarUnit fromDate:date].weekday).stringValue]){
+	for(NSArray *w in [dateWindows objectForKey:currDay]){
 		if([w[0] isKindOfClass:NSString.class]){
-			int nextDay = fmod([gregorian components:NSWeekdayCalendarUnit fromDate:date].weekday+1,7)==0?7:fmod([gregorian components:NSWeekdayCalendarUnit fromDate:date].weekday+1,7);
 			NSArray *nextWindows = [dateWindows objectForKey:@(nextDay).stringValue];
 			NSArray *firstWindowInNext = nextWindows[0][0];
+			if([firstWindowInNext[0] isKindOfClass:NSString.class])
+				return firstWindowInNext[0];
+				
 			NSDate *firstOpenDateInNext = firstWindowInNext[0];
 			NSDate *firstClosedDateInNext = firstWindowInNext[1];
-
-			if([[firstOpenDateInNext laterDate:date] isEqualToDate:date])
-				return [self open:firstOpenDateInNext andClosedDateToString:firstClosedDateInNext];
-			else
-				return w[0];
+			return [self open:firstOpenDateInNext andClosedDateToString:firstClosedDateInNext];
 		}//end if
 		
 		for(NSArray *ww in w){
 			NSDate *open = ww[0];
 			NSDate *closed = ww[1];
+			
 			if([[open earlierDate:date] isEqualToDate:open] && [[closed laterDate:date] isEqualToDate:closed])
 				return [self open:open andClosedDateToString:closed];
 		
 			if(!best)
-				best = @[open, closed];
+				best = @[[NSDate dateWithTimeIntervalSince1970:INFINITY], [NSDate dateWithTimeIntervalSinceNow:0]];
 		
 			else if([[open laterDate:date] isEqualToDate:open])
 				if([[open earlierDate:best[0]] isEqualToDate:open])
 					best = @[open, closed];
-			}
-		}//end for
+		}
+	}//end for
 	
+	if([best[0] isEqualToDate:[NSDate dateWithTimeIntervalSince1970:INFINITY]]){
+		NSArray *nextWindows = [dateWindows objectForKey:@(nextDay).stringValue];
+		NSArray *firstWindowInNext = nextWindows[0][0];
+		NSDate *firstOpenDateInNext = firstWindowInNext[0];
+		NSDate *firstClosedDateInNext = firstWindowInNext[1];
+		return [self open:firstOpenDateInNext andClosedDateToString:firstClosedDateInNext];
+	}
+		
 	return [self open:best[0] andClosedDateToString:best[1]];
 }
 

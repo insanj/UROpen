@@ -61,7 +61,7 @@
 	[working addObject:blimpie];
 	
 	URPlace *connections = [[URPlace alloc] initWithName:@"Connections"];
-	NSArray *cWeek = @[@"7.0-10.0"];
+	NSArray *cWeek = @[@"7.0-22.0"];
 	connections.windows = @{@"1": @[@"14.0-22.0"], @"2": cWeek, @"3": cWeek, @"4": cWeek, @"5": cWeek, @"6": @[@"7.0-17.0"], @"7": @[@"sunday"]};
 	connections.plan = @"no passes";
 	connections.location = @"43.128766667,-77.628166667";
@@ -135,11 +135,15 @@
 
 	places = working;
 	[self refreshPlaces];
+	//PROBLEM: refreshing dates fucks with what was previously marked as open last day... have to somehow deal
+	//maybe to go URPLACE and make sure the date is only fucked with if it's not currently open, or has other windows
+	//that might be hit (cause yolo)
 }
 
 -(void)refreshPlaces{
 	for(URPlace *p in places)
-		[p refreshDates];
+		if(![p openForDate:[NSDate date]])
+			[p refreshDates];
 }
 
 -(void)refreshTime{
@@ -194,7 +198,8 @@
 		[((UINavigationItem *)mainBar.items[0]).leftBarButtonItem setEnabled:NO];
 		aboutView = [[UIView alloc] initWithFrame:CGRectMake(self.view.frame.size.width, self.view.frame.size.height, 250, 250)];
 		UITextView *aboutText = [[UITextView alloc] initWithFrame:CGRectMake(0, 0, 250, 250)];
-		aboutText.text = @"UROpen was made with love by Julian (insanj) Weiss for fellow UofR-ers.\n\nBorn over the course of Thanksgiving Break '13, and meant to be free forever.\n\nVersion 1.0\n © 2013 Julian Weiss";
+		aboutText.text = [NSString stringWithFormat:@"UROpen was made with love by Julian (insanj) Weiss for fellow UofR-ers.\n\nBorn over the course of Thanksgiving Break '13, and meant to be free forever.\n\nVersion %@, Build %@\n © 2013 Julian Weiss", [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"], [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"]];
+
 		aboutText.backgroundColor = [UIColor clearColor];
 		aboutText.font = [UIFont systemFontOfSize:18.f];
 		aboutText.textAlignment = NSTextAlignmentJustified;
@@ -280,7 +285,7 @@
 	static NSString *cellIdentifier = @"URCell";
     UICollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:cellIdentifier forIndexPath:indexPath];
 	URPlace	*curr = [places objectAtIndex:indexPath.row];
-
+	
 	if([curr.plan isEqualToString:@"all plans"]){
 		((UIImageView *)[cell viewWithTag:1]).image = [UIImage imageNamed:@"URGreen.png"];
 		((UIImageView *)[cell viewWithTag:1]).highlightedImage = [UIImage imageNamed:@"URGreenPressed.png"];
@@ -292,7 +297,7 @@
 	}
 		
 	if(![curr openForDate:[NSDate date]])
-		cell.alpha = 0.25;
+		cell.alpha = 0.3;
 	
     UILabel *titleLabel = (UILabel *)[cell viewWithTag:2];
 	titleLabel.adjustsFontSizeToFitWidth = YES;
