@@ -9,12 +9,13 @@
 #import "URPlace.h"
 
 @implementation URPlace
-@synthesize name, location, windows, descriptions, icon;
+@synthesize name, location, dateWindows, windows, icon, plan;
 
 -(URPlace *)initWithName:(NSString *)given{
 	if((self = [super init])){
 		[self refreshDates];
 		name = given;
+		plan = URCampus;
 	}
 	return self;
 }
@@ -68,20 +69,6 @@
 -(BOOL)openForDate:(NSDate *)date{
 	NSCalendar *gregorian = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
 	NSString *weekday = @([gregorian components:NSWeekdayCalendarUnit fromDate:date].weekday).stringValue;
-	int prevDay = fmod([gregorian components:NSWeekdayCalendarUnit fromDate:date].weekday-1,7)==0?7:fmod([gregorian components:NSWeekdayCalendarUnit fromDate:date].weekday-1,7);
-
-	for(NSArray *w in [dateWindows objectForKey:@(prevDay).stringValue]){
-		if([w[0] isKindOfClass:NSString.class])
-			continue;
-		
-		for(NSArray *ww in w){
-			NSDate *open = ww[0];
-			NSDate *closed = ww[1];
-			
-			if([[open earlierDate:date] isEqualToDate:open] && [[closed laterDate:date] isEqualToDate:closed])
-				return YES;
-		}
-	}
 	
 	for(NSArray *w in [dateWindows objectForKey:weekday]){
 		if([w[0] isKindOfClass:NSString.class])
@@ -164,4 +151,15 @@
 		return @((int)given).stringValue;
 }
 
+-(NSComparisonResult)nameCompare:(URPlace *)given{
+    return [name compare:given.name];
+}
+
+-(NSComparisonResult)mealCompare:(URPlace *)given{
+	return [@(given.plan) compare:@(plan)];
+}
+
+-(NSComparisonResult)openCompare:(URPlace *)given{
+	return [@([given openForDate:[NSDate date]]) compare:@([self openForDate:[NSDate date]])];
+}
 @end

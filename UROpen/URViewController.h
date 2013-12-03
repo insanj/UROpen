@@ -10,14 +10,14 @@
 #import "URPlace.h"
 #import "URNavigationBar.h"
 
-@interface URViewController : UIViewController <UICollectionViewDataSource, UICollectionViewDelegate, UIAlertViewDelegate>{
-	NSMutableArray *places;
-	UIView *aboutView;
-	NSTimer *global;
+@interface URViewController : UIViewController <UICollectionViewDataSource, UICollectionViewDelegate, UIAlertViewDelegate, UIActionSheetDelegate>{
+	NSArray *places;
+	NSDictionary *descriptions;
 	URPlace *last;
-	UIDynamicAnimator *animator;
+
 	UITextView *titleText;
-	BOOL info;
+	UIDynamicAnimator *animator;
+	UIView *aboutView;
 	UICollectionViewCell *sample;
 }
 
