@@ -7,6 +7,7 @@
 //
 
 #define IS_WIDESCREEN (fabs((double)[[UIScreen mainScreen] bounds].size.height - (double)568) < DBL_EPSILON)
+#define IS_IPAD (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
 #import "URViewController.h"
 
 @implementation URViewController
@@ -59,6 +60,7 @@
 #pragma mark - User Interaction
 -(void)reloadCollection{
 	[self refreshTime];
+	[self refreshPlaces];
 	[self toggleBarButtonItems];
 	
 	animator = [[UIDynamicAnimator alloc] initWithReferenceView:self.view];
@@ -70,14 +72,12 @@
 		[animator removeBehavior:snap];
 		
 		[mainCollectionView removeFromSuperview];
-		[self refreshPlaces];
-		[mainCollectionView reloadData];
+		[mainCollectionView reloadItemsAtIndexPaths:[mainCollectionView indexPathsForVisibleItems]];
 		
 		[self.view insertSubview:mainCollectionView belowSubview:mainBar];
 		UISnapBehavior *back = [[UISnapBehavior alloc] initWithItem:mainCollectionView snapToPoint:CGPointMake(self.view.center.x, self.view.center.y)];
 		[back setDamping:0.75];
 		[animator addBehavior:back];
-		
 		[self toggleBarButtonItems];
 	});
 }//end method
@@ -137,9 +137,17 @@
 		[self.view addSubview:season];
 		
 		[UIView animateWithDuration:0.5 animations:^{
-			[season setCenter:CGPointMake(self.view.center.x, mainBar.frame.size.height + (IS_WIDESCREEN?45:26))];
-			[sample setCenter:CGPointMake(self.view.center.x, self.view.center.y - 65)];
-			[aboutView setCenter:CGPointMake(self.view.center.x, self.view.frame.size.height - aboutView.frame.size.height/(IS_WIDESCREEN?2:2.35))];
+			if(IS_IPAD){
+				[season setCenter:CGPointMake(self.view.center.x, self.view.center.y - (self.view.frame.size.height * 1/4))];
+				[sample setCenter:CGPointMake(self.view.center.x, self.view.center.y - (self.view.frame.size.height * 1/16))];
+				[aboutView setCenter:CGPointMake(self.view.center.x, self.view.center.y + (self.view.frame.size.height * 1/4))];
+			}
+			
+			else{
+				[season setCenter:CGPointMake(self.view.center.x, mainBar.frame.size.height + (IS_WIDESCREEN?45:26))];
+				[sample setCenter:CGPointMake(self.view.center.x, self.view.center.y - 65)];
+				[aboutView setCenter:CGPointMake(self.view.center.x, self.view.frame.size.height - aboutView.frame.size.height/(IS_WIDESCREEN?2:2.35))];
+			}
 		}];
 	}//end if
 	
@@ -238,9 +246,19 @@
 }//end method
 
 -(void)refreshPlaces{
-	for(URPlace *p in places)
-		if(![p openForDate:[NSDate date]])
-			[p refreshDates];
+	NSDate *now = [NSDate date];
+	for(URPlace *p in places){
+		[p refreshDates];
+		
+		NSCalendar *calendar = [NSCalendar currentCalendar];
+		NSDateComponents *dayComponent = [[NSDateComponents alloc] init];
+		dayComponent.day = -1;
+		NSDate *yesterday = [calendar dateByAddingComponents:dayComponent toDate:now options:0];
+		[p refreshDay:yesterday];
+		
+		if(![p openForDate:now])
+			[p refreshDay:now];
+	}
 }//end method
 
 -(void)refreshTime{

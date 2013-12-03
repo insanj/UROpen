@@ -17,12 +17,14 @@ typedef enum {
 } URPlanType;
 
 @property (nonatomic, retain) NSString *name, *location;
-@property (nonatomic, retain) NSDictionary *dateWindows, *windows;
+@property (nonatomic, retain) NSMutableDictionary *dateWindows;
+@property (nonatomic, retain) NSDictionary *windows;
 @property (nonatomic, retain) UIImage *icon;
 @property (nonatomic, assign) URPlanType plan;
 
 -(URPlace *)initWithName:(NSString *)given;
 -(void)refreshDates;
+-(void)refreshDay:(NSDate *)date;
 -(BOOL)openForDate:(NSDate *)date;				//if place is open for given date
 -(NSString *)descForDate:(NSDate *)date;		//description for given date
 -(NSString *)nextWindowForDate:(NSDate *)date;	//formatted XX:XX-XX:XX for date
