@@ -6,6 +6,7 @@
 //  Copyright (c) 2013 insanj. All rights reserved.
 //
 
+#define IS_WIDESCREEN (fabs((double)[[UIScreen mainScreen] bounds].size.height - (double)568) < DBL_EPSILON)
 #import "URViewController.h"
 
 @implementation URViewController
@@ -122,32 +123,36 @@
 	if(newAbout){
 		mainCollectionView.scrollEnabled = NO;
 		sample = [[[NSBundle mainBundle] loadNibNamed:@"URCollectionViewCell" owner:self options:nil] objectAtIndex:0];
-		[sample setFrame:CGRectMake(self.view.center.x * 2, self.view.center.y, 150, 150)];
-		UILabel *titleLabel = (UILabel *)[sample viewWithTag:2];
-		titleLabel.text = @"Name";
-		
-		UILabel *locationLabel = (UILabel *)[sample viewWithTag:3];
-		locationLabel.text = @"Dining Plan";
-		
-		UILabel *windowLabel = (UILabel *)[sample viewWithTag:4];
-		windowLabel.text = @"Next Open Window";
-		
+		[sample setFrame:CGRectMake(self.view.center.x * 2, self.view.center.y, 140, 140)];
+		((UILabel *)[sample viewWithTag:2]).text = @"Name";
+		((UILabel *)[sample viewWithTag:3]).text = @"Dining Plan";
+		((UILabel *)[sample viewWithTag:4]).text = @"Next Open Window";
 		[self.view addSubview:sample];
+		
+		season = [[UILabel alloc] initWithFrame:CGRectMake(self.view.center.x * 2, self.view.center.y, 150, 50)];
+		season.textAlignment = NSTextAlignmentCenter;
+		season.backgroundColor = [UIColor clearColor];
+		season.font = [UIFont boldSystemFontOfSize:22.f];
+		season.text = @"Fall Schedule";
+		[self.view addSubview:season];
+		
 		[UIView animateWithDuration:0.5 animations:^{
-			[sample setCenter:CGPointMake(self.view.center.x, self.view.center.y - 75)];
-			[aboutView setFrame:CGRectMake(self.view.frame.size.width - 275, self.view.frame.size.height - 235, 250, 250)];
-		} completion:^(BOOL finished){
+			[season setCenter:CGPointMake(self.view.center.x, mainBar.frame.size.height + (IS_WIDESCREEN?45:26))];
+			[sample setCenter:CGPointMake(self.view.center.x, self.view.center.y - 65)];
+			[aboutView setCenter:CGPointMake(self.view.center.x, self.view.frame.size.height - aboutView.frame.size.height/(IS_WIDESCREEN?2:2.35))];
 		}];
 	}//end if
 	
 	else{
 		mainCollectionView.scrollEnabled = YES;
 		[UIView animateWithDuration:0.5 animations:^{
-			[sample setFrame:CGRectMake(self.view.center.x * 2, self.view.center.y, 150, 150)];
-			[aboutView setFrame:CGRectMake(self.view.frame.size.width, self.view.frame.size.height, 250, 250)];
+			[season setCenter:CGPointMake(self.view.center.x * 5, season.center.y)];
+			[sample setCenter:CGPointMake(self.view.center.x * 5, sample.center.y)];
+			[aboutView setCenter:CGPointMake(self.view.center.x * 5, aboutView.center.y)];
 		} completion:^(BOOL finished){
-			aboutView = nil;
+			season = nil;
 			sample = nil;
+			aboutView = nil;
 		}];
 	}//end lese
 }//end method

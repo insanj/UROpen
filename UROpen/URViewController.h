@@ -19,6 +19,7 @@
 	UIDynamicAnimator *animator;
 	UIView *aboutView;
 	UICollectionViewCell *sample;
+	UILabel *season;
 }
 
 @property (strong, nonatomic) UICollectionView *mainCollectionView;
