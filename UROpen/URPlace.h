@@ -17,7 +17,7 @@ typedef enum {
 } URPlanType;
 
 @property (nonatomic, retain) NSString *name, *location;
-@property (nonatomic, retain) NSMutableDictionary *dateWindows;
+@property (nonatomic, retain) NSMutableDictionary *dateWindows, *openPasts;
 @property (nonatomic, retain) NSDictionary *windows;
 @property (nonatomic, retain) UIImage *icon;
 @property (nonatomic, assign) URPlanType plan;

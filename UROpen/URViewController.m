@@ -308,19 +308,8 @@
 }//end method
 
 -(void)refreshPlaces{
-	NSDate *now = [NSDate date];
-	for(URPlace *p in places){
+	for(URPlace *p in places)
 		[p refreshDates];
-		
-		NSCalendar *calendar = [NSCalendar currentCalendar];
-		NSDateComponents *dayComponent = [[NSDateComponents alloc] init];
-		dayComponent.day = -1;
-		NSDate *yesterday = [calendar dateByAddingComponents:dayComponent toDate:now options:0];
-		[p refreshDay:yesterday];
-		
-		if(![p openForDate:now])
-			[p refreshDay:now];
-	}
 }//end method
 
 -(void)refreshTime{

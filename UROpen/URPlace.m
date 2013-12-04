@@ -9,7 +9,7 @@
 #import "URPlace.h"
 
 @implementation URPlace
-@synthesize name, location, dateWindows, windows, icon, plan;
+@synthesize name, location, dateWindows, openPasts, windows, icon, plan;
 
 -(URPlace *)initWithName:(NSString *)given{
 	if((self = [super init])){
@@ -23,6 +23,7 @@
 //Key: day, Object: Array of arrays, top-level being windows, bottom-level being open/closed NSDates
 -(void)refreshDates{
 	NSMutableDictionary *creating = [[NSMutableDictionary alloc] init];
+	NSMutableDictionary *midnights = [[NSMutableDictionary alloc] init];
 	NSCalendar *calendar = [NSCalendar currentCalendar];
 	
 	for(NSString *day in windows.allKeys){
@@ -51,10 +52,14 @@
 			NSDate *closedDate = [calendar dateFromComponents:closedDateComp];
 						
 			if([[closedDate earlierDate:openDate] isEqualToDate:closedDate]){
+				[midnights setObject:@(YES) forKey:day];
 				NSDateComponents *dayComponent = [[NSDateComponents alloc] init];
 				dayComponent.day = 1;
 				closedDate = [calendar dateByAddingComponents:dayComponent toDate:closedDate options:0];
-			}
+			}//end if
+
+			else
+				[midnights setObject:@(YES) forKey:day];
 
 			NSArray *currDateWindow = @[openDate, closedDate];
 			[currDated addObject:@[currDateWindow]];
@@ -64,6 +69,7 @@
 	}//end for
 	
 	dateWindows = creating;
+	openPasts = midnights;
 }//end method
 
 -(void)refreshDay:(NSDate *)date{
@@ -113,6 +119,8 @@
 	NSCalendar *gregorian = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
 	NSString *weekday = @([gregorian components:NSWeekdayCalendarUnit fromDate:date].weekday).stringValue;
 	
+	NSDateComponents *curr = [[NSCalendar currentCalendar] components:(NSDayCalendarUnit | NSHourCalendarUnit) fromDate:date];
+
 	for(NSArray *w in [dateWindows objectForKey:weekday]){
 		if([w[0] isKindOfClass:NSString.class])
 			return NO;
@@ -121,9 +129,9 @@
 			NSDate *open = ww[0];
 			NSDate *closed = ww[1];
 			
-			if([[open earlierDate:date] isEqualToDate:open] && [[closed laterDate:date] isEqualToDate:closed])
+			if([[open earlierDate:date] isEqualToDate:open] && ([[closed laterDate:date] isEqualToDate:closed] || ([openPasts objectForKey:@(curr.weekday).stringValue] && curr.hour < 24)))
 				return YES;
-		}
+		}//end for
 	}//end for
 	
 	return NO;
