@@ -20,11 +20,8 @@
 		
 	self.view.frame = [[UIScreen mainScreen] bounds];
 	self.view.backgroundColor = [UIColor darkGrayColor];
-	self.view.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
 	
 	mainBar = [[URNavigationBar alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 60)];
-	mainBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-
 	UINavigationItem *barItems = [[UINavigationItem alloc] init];
 
 	UIBarButtonItem *refresh = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh target:self action:@selector(reloadCollection)];
@@ -53,7 +50,6 @@
 	mainCollectionView.contentInset = UIEdgeInsetsMake(mainBar.frame.size.height + ([UIApplication sharedApplication].statusBarFrame.size.height/10), 5, 5 + ([UIApplication sharedApplication].statusBarFrame.size.height/2), 5);
 	mainCollectionView.scrollIndicatorInsets = UIEdgeInsetsMake(mainBar.frame.size.height + 5, 0, 5, 0);
 	mainCollectionView.tag = 5;
-	mainCollectionView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	[self.view insertSubview:mainCollectionView belowSubview:mainBar];
 }//end method
 
@@ -182,6 +178,53 @@
 			aboutView = nil;
 		}];
 	}//end lese
+}//end method
+
+-(void)flipBall:(UICollectionViewCell *)cell{
+	if(!CGPointEqualToPoint(ballCenter, CGPointZero)){
+		[UIView animateWithDuration:0.5 animations:^{
+			cell.alpha = prevAlpha;
+			[self.view bringSubviewToFront:mainBar];
+			for(UICollectionViewCell *c in mainCollectionView.subviews)
+				if(c.alpha >= 0.5f)
+					c.alpha = 0.95;
+				
+			cell.transform = CGAffineTransformMakeScale(1, 1);
+			cell.center = ballCenter;
+			
+			((UILabel *)[cell viewWithTag:2]).alpha = 1.0;
+			((UILabel *)[cell viewWithTag:3]).alpha = 1.0;
+			((UILabel *)[cell viewWithTag:4]).alpha = 1.0;
+		}];
+		
+		ballCenter = CGPointZero;
+		mainCollectionView.scrollEnabled = YES;
+		tappedBall = nil;
+	}//end if
+	
+	else{
+		mainCollectionView.scrollEnabled = NO;
+		ballCenter = cell.center;
+		
+		[UIView animateWithDuration:0.5 animations:^{
+			cell.alpha = 0.95;
+			[mainCollectionView bringSubviewToFront:cell];
+			[self.view bringSubviewToFront:mainCollectionView];
+			for(UICollectionViewCell *c in mainCollectionView.subviews)
+				if(![c isEqual:cell])
+					if(c.alpha >= 0.95f)
+						c.alpha	= 0.5;
+			
+			cell.transform = CGAffineTransformMakeScale(-2, 2);
+			cell.center = CGPointMake(self.view.center.x, mainCollectionView.center.y + mainCollectionView.contentOffset.y);
+			((UILabel *)[cell viewWithTag:2]).alpha = 0;
+			((UILabel *)[cell viewWithTag:3]).alpha = 0;
+			((UILabel *)[cell viewWithTag:4]).alpha = 0;
+		}];
+	}//end else
+	
+	/*UIAlertView *mapAV = [[UIAlertView alloc] initWithTitle:last.name message:@"Would you like to view this dining hall in Apple Maps?" delegate:self cancelButtonTitle:@"No Thanks" otherButtonTitles:@"Ok", nil];
+	[mapAV show];*/
 }//end method
 
 #pragma mark - Backend
@@ -332,12 +375,17 @@
 -(void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath{
 	[collectionView deselectItemAtIndexPath:indexPath animated:YES];
 	
-	if([((UILabel *)([[collectionView cellForItemAtIndexPath:indexPath] viewWithTag:2])).text isEqualToString:@"Name"])
-		return;
-
+	UICollectionViewCell *cell = [collectionView cellForItemAtIndexPath:indexPath];
 	last = ((URPlace *)[places objectAtIndex:indexPath.row]);
-	UIAlertView *mapAV = [[UIAlertView alloc] initWithTitle:last.name message:@"Would you like to view this dining hall in Apple Maps?" delegate:self cancelButtonTitle:@"No Thanks" otherButtonTitles:@"Ok", nil];
-	[mapAV show];
+	
+	if(!tappedBall){
+		tappedBall = cell;
+		prevAlpha = cell.alpha;
+		[self flipBall:tappedBall];
+	}
+	
+	else if([cell isEqual:tappedBall])
+		[self flipBall:tappedBall];
 }//end method
 
 -(UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath{
@@ -359,6 +407,9 @@
 	
 	if(![curr openForDate:[NSDate date]])
 		cell.alpha = 0.3;
+	
+	else
+		cell.alpha = 0.95;
 	
     UILabel *titleLabel = (UILabel *)[cell viewWithTag:2];
 	titleLabel.adjustsFontSizeToFitWidth = YES;

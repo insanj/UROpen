@@ -20,6 +20,10 @@
 	UIView *aboutView;
 	UICollectionViewCell *sample;
 	UILabel *season;
+	
+	CGPoint ballCenter;
+	UICollectionViewCell *tappedBall;
+	float prevAlpha;
 }
 
 @property (strong, nonatomic) UICollectionView *mainCollectionView;
