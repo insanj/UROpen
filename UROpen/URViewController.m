@@ -20,8 +20,11 @@
 		
 	self.view.frame = [[UIScreen mainScreen] bounds];
 	self.view.backgroundColor = [UIColor darkGrayColor];
-
+	self.view.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+	
 	mainBar = [[URNavigationBar alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 60)];
+	mainBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+
 	UINavigationItem *barItems = [[UINavigationItem alloc] init];
 
 	UIBarButtonItem *refresh = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh target:self action:@selector(reloadCollection)];
@@ -50,11 +53,27 @@
 	mainCollectionView.contentInset = UIEdgeInsetsMake(mainBar.frame.size.height + ([UIApplication sharedApplication].statusBarFrame.size.height/10), 5, 5 + ([UIApplication sharedApplication].statusBarFrame.size.height/2), 5);
 	mainCollectionView.scrollIndicatorInsets = UIEdgeInsetsMake(mainBar.frame.size.height + 5, 0, 5, 0);
 	mainCollectionView.tag = 5;
+	mainCollectionView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	[self.view insertSubview:mainCollectionView belowSubview:mainBar];
 }//end method
 
 -(void)didReceiveMemoryWarning{
     [super didReceiveMemoryWarning];
+}
+
+-(void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration{
+	if(UIInterfaceOrientationIsLandscape(toInterfaceOrientation)){
+		if(aboutView)
+			[self openInfo];
+		[self enableBarButtonItems:NO];
+	}
+	
+	else
+		[self enableBarButtonItems:YES];
+}//end method
+
+-(void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation{
+	[mainCollectionView reloadItemsAtIndexPaths:[mainCollectionView indexPathsForVisibleItems]];
 }
 
 #pragma mark - User Interaction
@@ -283,6 +302,13 @@
 	for(UIBarButtonItem *b in buttons.leftBarButtonItems)
 		[b setEnabled:set];
 	[buttons.rightBarButtonItem setEnabled:set];
+}//end method
+
+-(void)enableBarButtonItems:(BOOL)should{
+	UINavigationItem *buttons = (UINavigationItem *)mainBar.items[0];
+	for(UIBarButtonItem *b in buttons.leftBarButtonItems)
+		[b setEnabled:should];
+	[buttons.rightBarButtonItem setEnabled:should];
 }//end method
 
 -(NSString *)appendZerosIfNeeded:(float)given{
