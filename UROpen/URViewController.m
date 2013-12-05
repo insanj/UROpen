@@ -24,10 +24,9 @@
 	mainBar = [[URNavigationBar alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 60)];
 	UINavigationItem *barItems = [[UINavigationItem alloc] init];
 
-	UIBarButtonItem *refresh = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh target:self action:@selector(reloadCollection)];
 	UIBarButtonItem *filter = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"filter.png"] style:UIBarButtonItemStyleBordered target:self action:@selector(filterTapped:)];
-	[filter setImageInsets:UIEdgeInsetsMake(1.5, -15, -1.5, 15)];
-	barItems.leftBarButtonItems = @[refresh, filter];
+	[filter setImageInsets:UIEdgeInsetsMake(1.5, 0, -1.5, 0)];
+	barItems.leftBarButtonItem = filter;
 	
 	UIButton *moreButton = [UIButton buttonWithType:UIButtonTypeInfoLight];
 	[moreButton addTarget:self action:@selector(openInfo) forControlEvents:UIControlEventTouchUpInside];
@@ -35,7 +34,7 @@
 	barItems.rightBarButtonItem = moreItem;
 	
 	mainBar.items = @[barItems];
-	[self refreshTime];
+	[self setUndertitle:@"Fall 2013"];
 	[self.view addSubview:mainBar];
 
 	UICollectionViewFlowLayout *flowLayout = [[UICollectionViewFlowLayout alloc] init];
@@ -51,6 +50,8 @@
 	mainCollectionView.scrollIndicatorInsets = UIEdgeInsetsMake(mainBar.frame.size.height + 5, 0, 5, 0);
 	mainCollectionView.tag = 5;
 	[self.view insertSubview:mainCollectionView belowSubview:mainBar];
+	
+	timer = [NSTimer scheduledTimerWithTimeInterval:60 target:self selector:@selector(refreshPlaces) userInfo:nil repeats:YES];
 }//end method
 
 -(void)didReceiveMemoryWarning{
@@ -74,8 +75,6 @@
 
 #pragma mark - User Interaction
 -(void)reloadCollection{
-	[self refreshTime];
-	[self refreshPlaces];
 	[self toggleBarButtonItems];
 	
 	animator = [[UIDynamicAnimator alloc] initWithReferenceView:self.view];
@@ -87,7 +86,7 @@
 		[animator removeBehavior:snap];
 		
 		[mainCollectionView removeFromSuperview];
-		[mainCollectionView reloadItemsAtIndexPaths:[mainCollectionView indexPathsForVisibleItems]];
+		[self refreshPlaces];
 		
 		[self.view insertSubview:mainCollectionView belowSubview:mainBar];
 		UISnapBehavior *back = [[UISnapBehavior alloc] initWithItem:mainCollectionView snapToPoint:CGPointMake(self.view.center.x, self.view.center.y)];
@@ -103,17 +102,12 @@
 }//end method
 
 -(void)openInfo{
-	UINavigationItem *buttons = (UINavigationItem *)mainBar.items[0];
-	BOOL set = !buttons.leftBarButtonItem.enabled;
-	for(UIBarButtonItem *b in buttons.leftBarButtonItems)
-		[b setEnabled:set];
-	
 	BOOL newAbout = NO;
 	if(!aboutView){
 		newAbout = YES;
 		aboutView = [[UIView alloc] initWithFrame:CGRectMake(self.view.frame.size.width, self.view.frame.size.height, 250, 250)];
 		UITextView *aboutText = [[UITextView alloc] initWithFrame:CGRectMake(0, 0, 250, 250)];
-		aboutText.text = [NSString stringWithFormat:@"UROpen was made with love by Julian (insanj) Weiss for fellow UofR-ers.\n\nBorn over the course of Thanksgiving Break '13, and meant to be free forever.\n\nVersion %@, Build %@\n © 2013 Julian Weiss", [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"], [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"]];
+		aboutText.text = [NSString stringWithFormat:@"UROpen was made with love by Julian (insanj) Weiss for fellow UofR-ers.\n\nBorn Thanksgiving Break '13, released Spring 2014, and meant to be free forever.\n\nVersion %@, Build %@\n © 2013 Julian Weiss", [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"], [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"]];
 		
 		aboutText.backgroundColor = [UIColor clearColor];
 		aboutText.font = [UIFont systemFontOfSize:18.f];
@@ -136,6 +130,7 @@
 	}//end for
 	
 	if(newAbout){
+		[((UINavigationItem *)mainBar.items[0]).leftBarButtonItem setEnabled:NO];
 		mainCollectionView.scrollEnabled = NO;
 		sample = [[[NSBundle mainBundle] loadNibNamed:@"URCollectionViewCell" owner:self options:nil] objectAtIndex:0];
 		[sample setFrame:CGRectMake(self.view.center.x * 2, self.view.center.y, 140, 140)];
@@ -144,29 +139,31 @@
 		((UILabel *)[sample viewWithTag:4]).text = @"Next Open Window";
 		[self.view addSubview:sample];
 		
-		season = [[UILabel alloc] initWithFrame:CGRectMake(self.view.center.x * 2, self.view.center.y, 150, 50)];
+		season = [[UILabel alloc] initWithFrame:CGRectMake(self.view.center.x * 2, self.view.center.y * 1.5, 200, 50)];
 		season.textAlignment = NSTextAlignmentCenter;
 		season.backgroundColor = [UIColor clearColor];
-		season.font = [UIFont boldSystemFontOfSize:22.f];
-		season.text = @"Fall Schedule";
+		season.font = [UIFont systemFontOfSize:14.f];
+		season.textColor = [UIColor darkGrayColor];
+		season.text = @"(tap balls for full schedule)";
 		[self.view addSubview:season];
 		
 		[UIView animateWithDuration:0.5 animations:^{
 			if(IS_IPAD){
-				[season setCenter:CGPointMake(self.view.center.x, self.view.center.y - (self.view.frame.size.height * 1/4))];
-				[sample setCenter:CGPointMake(self.view.center.x, self.view.center.y - (self.view.frame.size.height * 1/16))];
+				[sample setCenter:CGPointMake(self.view.center.x, self.view.center.y - (self.view.frame.size.height * 1/4))];
+				[season setCenter:CGPointMake(self.view.center.x, self.view.center.y - (self.view.frame.size.height * 1/16))];
 				[aboutView setCenter:CGPointMake(self.view.center.x, self.view.center.y + (self.view.frame.size.height * 1/4))];
 			}
 			
 			else{
-				[season setCenter:CGPointMake(self.view.center.x, mainBar.frame.size.height + (IS_WIDESCREEN?45:26))];
-				[sample setCenter:CGPointMake(self.view.center.x, self.view.center.y - 65)];
+				[sample setCenter:CGPointMake(self.view.center.x, mainBar.frame.size.height + (IS_WIDESCREEN?100:80))];
+				[season setCenter:CGPointMake(self.view.center.x, self.view.center.y - (IS_WIDESCREEN?30:13))];
 				[aboutView setCenter:CGPointMake(self.view.center.x, self.view.frame.size.height - aboutView.frame.size.height/(IS_WIDESCREEN?2:2.35))];
 			}
 		}];
 	}//end if
 	
 	else{
+		[((UINavigationItem *)mainBar.items[0]).leftBarButtonItem setEnabled:YES];
 		mainCollectionView.scrollEnabled = YES;
 		[UIView animateWithDuration:0.5 animations:^{
 			[season setCenter:CGPointMake(self.view.center.x * 5, season.center.y)];
@@ -310,11 +307,17 @@
 -(void)refreshPlaces{
 	for(URPlace *p in places)
 		[p refreshDates];
+	
+	[mainCollectionView reloadItemsAtIndexPaths:[mainCollectionView indexPathsForVisibleItems]];
 }//end method
 
 -(void)refreshTime{
 	NSCalendar *calendar = [NSCalendar currentCalendar];
 	NSDateComponents *comp = [calendar components:(NSHourCalendarUnit | NSMinuteCalendarUnit | NSSecondCalendarUnit) fromDate:[NSDate date]];
+	[self setUndertitle:[NSString stringWithFormat:@"%i:%@ %@", fmod(comp.hour, 12)==0?12:((int)fmod(comp.hour, 12)), [self appendZerosIfNeeded:comp.minute], comp.hour>=12?@"pm":@"am"]];
+}//end method
+
+-(void)setUndertitle:(NSString *)string{
 	NSMutableParagraphStyle *centered = [[NSMutableParagraphStyle alloc] init];
 	[centered setAlignment:NSTextAlignmentCenter];
 	
@@ -323,23 +326,20 @@
 	titleText.editable = NO;
 	titleText.selectable = NO;
 	NSMutableAttributedString *titleStr = [[NSMutableAttributedString alloc] initWithString:@"UROpen" attributes:@{NSFontAttributeName : [UIFont boldSystemFontOfSize:16.f], NSParagraphStyleAttributeName : centered}];
-	[titleStr appendAttributedString:[[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"\n➟ %i:%@ %@", fmod(comp.hour, 12)==0?12:((int)fmod(comp.hour, 12)), [self appendZerosIfNeeded:comp.minute], comp.hour>=12?@"pm":@"am"] attributes:@{NSFontAttributeName : [UIFont systemFontOfSize:11.f], NSParagraphStyleAttributeName : centered}]];
+	[titleStr appendAttributedString:[[NSAttributedString alloc] initWithString:[@"\n➟ " stringByAppendingString:string] attributes:@{NSFontAttributeName : [UIFont systemFontOfSize:11.f], NSParagraphStyleAttributeName : centered}]];
 	titleText.attributedText = titleStr;
 	((UINavigationItem *)mainBar.items[0]).titleView = titleText;
-}//end method
+}
 
 -(void)toggleBarButtonItems{
 	UINavigationItem *buttons = (UINavigationItem *)mainBar.items[0];
 	BOOL set = !buttons.leftBarButtonItem.enabled;
-	for(UIBarButtonItem *b in buttons.leftBarButtonItems)
-		[b setEnabled:set];
-	[buttons.rightBarButtonItem setEnabled:set];
+	[self enableBarButtonItems:set];
 }//end method
 
 -(void)enableBarButtonItems:(BOOL)should{
 	UINavigationItem *buttons = (UINavigationItem *)mainBar.items[0];
-	for(UIBarButtonItem *b in buttons.leftBarButtonItems)
-		[b setEnabled:should];
+	[buttons.leftBarButtonItem setEnabled:should];
 	[buttons.rightBarButtonItem setEnabled:should];
 }//end method
 

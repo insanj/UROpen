@@ -24,6 +24,8 @@
 	CGPoint ballCenter;
 	UICollectionViewCell *tappedBall;
 	float prevAlpha;
+	
+	NSTimer *timer;
 }
 
 @property (strong, nonatomic) UICollectionView *mainCollectionView;
