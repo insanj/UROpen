@@ -52,14 +52,14 @@
 			NSDate *closedDate = [calendar dateFromComponents:closedDateComp];
 						
 			if([[closedDate earlierDate:openDate] isEqualToDate:closedDate]){
-				[midnights setObject:@(YES) forKey:day];
+				[midnights setObject:@(closedDateComp.hour) forKey:day];
 				NSDateComponents *dayComponent = [[NSDateComponents alloc] init];
 				dayComponent.day = 1;
 				closedDate = [calendar dateByAddingComponents:dayComponent toDate:closedDate options:0];
 			}//end if
 
 			else
-				[midnights setObject:@(YES) forKey:day];
+				[midnights setObject:@(-1) forKey:day];
 
 			NSArray *currDateWindow = @[openDate, closedDate];
 			[currDated addObject:@[currDateWindow]];
@@ -129,7 +129,7 @@
 			NSDate *open = ww[0];
 			NSDate *closed = ww[1];
 			
-			if([[open earlierDate:date] isEqualToDate:open] && ([[closed laterDate:date] isEqualToDate:closed] || ([openPasts objectForKey:@(curr.weekday).stringValue] && curr.hour < 24)))
+			if([[open earlierDate:date] isEqualToDate:open] && ([[closed laterDate:date] isEqualToDate:closed] || (curr.hour < (NSInteger)[openPasts objectForKey:@(curr.weekday)])))
 				return YES;
 		}//end for
 	}//end for

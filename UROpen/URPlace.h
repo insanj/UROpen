@@ -24,7 +24,6 @@ typedef enum {
 
 -(URPlace *)initWithName:(NSString *)given;
 -(void)refreshDates;
--(void)refreshDay:(NSDate *)date;
 -(BOOL)openForDate:(NSDate *)date;				//if place is open for given date
 -(NSString *)descForDate:(NSDate *)date;		//description for given date
 -(NSString *)nextWindowForDate:(NSDate *)date;	//formatted XX:XX-XX:XX for date
