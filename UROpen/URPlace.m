@@ -16,14 +16,13 @@
 		[self refreshDates];
 		name = given;
 		plan = URCampus;
+		openPasts = [[NSMutableDictionary alloc] init];
 	}
 	return self;
 }
 
-//Key: day, Object: Array of arrays, top-level being windows, bottom-level being open/closed NSDates
 -(void)refreshDates{
 	NSMutableDictionary *creating = [[NSMutableDictionary alloc] init];
-	NSMutableDictionary *midnights = [[NSMutableDictionary alloc] init];
 	NSCalendar *calendar = [NSCalendar currentCalendar];
 	
 	for(NSString *day in windows.allKeys){
@@ -50,16 +49,15 @@
 			[closedDateComp setHour:closedHour];
 			[closedDateComp setMinute:closedMinute];
 			NSDate *closedDate = [calendar dateFromComponents:closedDateComp];
-						
+			
+			NSDateComponents *yesterComp = [calendar components:(NSWeekdayCalendarUnit | NSHourCalendarUnit) fromDate:closedDate];
 			if([[closedDate earlierDate:openDate] isEqualToDate:closedDate]){
-				[midnights setObject:@(closedDateComp.hour) forKey:day];
-				NSDateComponents *dayComponent = [[NSDateComponents alloc] init];
-				dayComponent.day = 1;
-				closedDate = [calendar dateByAddingComponents:dayComponent toDate:closedDate options:0];
-			}//end if
+				[openPasts setObject:@(closedDateComp.hour) forKey:@(yesterComp.weekday).stringValue];
 
-			else
-				[midnights setObject:@(-1) forKey:day];
+				NSDateComponents *add = [[NSDateComponents alloc] init];
+				add.weekday = 1;
+				closedDate = [calendar dateByAddingComponents:add toDate:closedDate options:0];
+			}//end if
 
 			NSArray *currDateWindow = @[openDate, closedDate];
 			[currDated addObject:@[currDateWindow]];
@@ -69,57 +67,12 @@
 	}//end for
 	
 	dateWindows = creating;
-	openPasts = midnights;
 }//end method
-
--(void)refreshDay:(NSDate *)date{
-	NSCalendar *calendar = [NSCalendar currentCalendar];
-	NSDateComponents *currDateComp = [calendar components:(NSYearCalendarUnit | NSMonthCalendarUnit | NSDayCalendarUnit | NSHourCalendarUnit | NSMinuteCalendarUnit | NSSecondCalendarUnit) fromDate:date];
-	NSString *day = @(currDateComp.weekday).stringValue;
-	
-	NSArray *curr = windows[day];
-	NSMutableArray *currDated = [[NSMutableArray alloc] init];
-	for(NSString *s in curr){
-		if([s rangeOfString:@"-"].location == NSNotFound){
-			[currDated addObject:@[s]];
-			continue;
-		}
-		
-		NSArray *dashed = [s componentsSeparatedByString:@"-"];
-		int openHour = [dashed[0] floatValue];
-		int openMinute = ([dashed[0] floatValue] - openHour) * 60;
-		int closedHour = [dashed[1] floatValue];
-		int closedMinute = ([dashed[1] floatValue] - closedHour) * 60;
-		
-		NSDateComponents *openDateComp = [calendar components:(NSYearCalendarUnit | NSMonthCalendarUnit | NSDayCalendarUnit | NSHourCalendarUnit | NSMinuteCalendarUnit | NSSecondCalendarUnit) fromDate:[NSDate date]];
-		[openDateComp setHour:openHour];
-		[openDateComp setMinute:openMinute];
-		NSDate *openDate = [calendar dateFromComponents:openDateComp];
-		
-		NSDateComponents *closedDateComp = [calendar components:(NSYearCalendarUnit | NSMonthCalendarUnit | NSDayCalendarUnit | NSHourCalendarUnit | NSMinuteCalendarUnit | NSSecondCalendarUnit) fromDate:[NSDate date]];
-		[closedDateComp setHour:closedHour];
-		[closedDateComp setMinute:closedMinute];
-		NSDate *closedDate = [calendar dateFromComponents:closedDateComp];
-		
-		if([[closedDate earlierDate:openDate] isEqualToDate:closedDate]){
-			NSDateComponents *dayComponent = [[NSDateComponents alloc] init];
-			dayComponent.day = 1;
-			closedDate = [calendar dateByAddingComponents:dayComponent toDate:closedDate options:0];
-		}
-		
-		NSArray *currDateWindow = @[openDate, closedDate];
-		[currDated addObject:@[currDateWindow]];
-	}//end for
-	
-	[dateWindows setObject:currDated forKey:day];
-}//end method
-
 
 -(BOOL)openForDate:(NSDate *)date{
 	NSCalendar *gregorian = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
 	NSString *weekday = @([gregorian components:NSWeekdayCalendarUnit fromDate:date].weekday).stringValue;
-	
-	NSDateComponents *curr = [[NSCalendar currentCalendar] components:(NSDayCalendarUnit | NSHourCalendarUnit) fromDate:date];
+	NSDateComponents *curr = [[NSCalendar currentCalendar] components:(NSWeekdayCalendarUnit | NSHourCalendarUnit) fromDate:date];
 
 	for(NSArray *w in [dateWindows objectForKey:weekday]){
 		if([w[0] isKindOfClass:NSString.class])
@@ -128,8 +81,9 @@
 		for(NSArray *ww in w){
 			NSDate *open = ww[0];
 			NSDate *closed = ww[1];
-			
-			if([[open earlierDate:date] isEqualToDate:open] && ([[closed laterDate:date] isEqualToDate:closed] || (curr.hour < (NSInteger)[openPasts objectForKey:@(curr.weekday)])))
+				
+			int openPastHour = ((NSNumber *)[openPasts objectForKey:@(curr.weekday).stringValue]).intValue;
+			if(([[open earlierDate:date] isEqualToDate:open] && [[closed laterDate:date] isEqualToDate:closed]) || (curr.hour < openPastHour))
 				return YES;
 		}//end for
 	}//end for
