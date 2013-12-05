@@ -308,7 +308,8 @@
 	for(URPlace *p in places)
 		[p refreshDates];
 	
-	[mainCollectionView reloadItemsAtIndexPaths:[mainCollectionView indexPathsForVisibleItems]];
+	if(!aboutView)
+		[mainCollectionView reloadItemsAtIndexPaths:[mainCollectionView indexPathsForVisibleItems]];
 }//end method
 
 -(void)refreshTime{
