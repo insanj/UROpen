@@ -178,7 +178,7 @@
 			season = nil;
 			sample = nil;
 			aboutView = nil;
-			
+
 			[barItems.rightBarButtonItem setEnabled:YES];
 		}];
 	}//end lese

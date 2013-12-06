@@ -113,6 +113,7 @@
 			return [self open:firstOpenDateInNext andClosedDateToString:firstClosedDateInNext];
 		}//end if
 		
+		
 		for(NSArray *ww in w){
 			NSDate *open = ww[0];
 			NSDate *closed = ww[1];
@@ -129,11 +130,15 @@
 	if([best[0] isEqualToDate:[NSDate distantFuture]]){
 		NSArray *nextWindows = [dateWindows objectForKey:@(nextDay).stringValue];
 		NSArray *firstWindowInNext = nextWindows[0][0];
+		if([firstWindowInNext isKindOfClass:NSString.class])
+			return (NSString *)firstWindowInNext;
+
 		NSDate *firstOpenDateInNext = firstWindowInNext[0];
 		NSDate *firstClosedDateInNext = firstWindowInNext[1];
 		return [self open:firstOpenDateInNext andClosedDateToString:firstClosedDateInNext];
 	}
 		
+	NSLog(@"pre full return");
 	return [self open:best[0] andClosedDateToString:best[1]];
 }
 
