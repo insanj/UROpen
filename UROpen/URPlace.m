@@ -99,7 +99,7 @@
 	NSCalendar *gregorian = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
 	NSString *currDay = @([gregorian components:NSWeekdayCalendarUnit fromDate:date].weekday).stringValue;
 	int nextDay = fmod([gregorian components:NSWeekdayCalendarUnit fromDate:date].weekday+1,7)==0?7:fmod([gregorian components:NSWeekdayCalendarUnit fromDate:date].weekday+1,7);
-	NSArray *best = @[[NSDate dateWithTimeIntervalSince1970:INFINITY], [NSDate dateWithTimeIntervalSince1970:0.f]];
+	NSArray *best = @[[NSDate distantFuture], [NSDate distantPast]];
 	
 	for(NSArray *w in [dateWindows objectForKey:currDay]){
 		if([w[0] isKindOfClass:NSString.class]){
@@ -126,7 +126,7 @@
 		}
 	}//end for
 	
-	if([best[0] isEqualToDate:[NSDate dateWithTimeIntervalSince1970:INFINITY]]){
+	if([best[0] isEqualToDate:[NSDate distantFuture]]){
 		NSArray *nextWindows = [dateWindows objectForKey:@(nextDay).stringValue];
 		NSArray *firstWindowInNext = nextWindows[0][0];
 		NSDate *firstOpenDateInNext = firstWindowInNext[0];

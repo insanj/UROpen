@@ -102,6 +102,9 @@
 }//end method
 
 -(void)openInfo{
+	UINavigationItem *barItems = (UINavigationItem *) mainBar.items[0];
+	[barItems.rightBarButtonItem setEnabled:NO];
+
 	BOOL newAbout = NO;
 	if(!aboutView){
 		newAbout = YES;
@@ -130,7 +133,7 @@
 	}//end for
 	
 	if(newAbout){
-		[((UINavigationItem *)mainBar.items[0]).leftBarButtonItem setEnabled:NO];
+		[barItems.leftBarButtonItem setEnabled:NO];
 		mainCollectionView.scrollEnabled = NO;
 		sample = [[[NSBundle mainBundle] loadNibNamed:@"URCollectionViewCell" owner:self options:nil] objectAtIndex:0];
 		[sample setFrame:CGRectMake(self.view.center.x * 2, self.view.center.y, 140, 140)];
@@ -159,11 +162,13 @@
 				[season setCenter:CGPointMake(self.view.center.x, self.view.center.y - (IS_WIDESCREEN?30:13))];
 				[aboutView setCenter:CGPointMake(self.view.center.x, self.view.frame.size.height - aboutView.frame.size.height/(IS_WIDESCREEN?2:2.35))];
 			}
+		} completion:^(BOOL finished){
+			[barItems.rightBarButtonItem setEnabled:YES];
 		}];
 	}//end if
 	
 	else{
-		[((UINavigationItem *)mainBar.items[0]).leftBarButtonItem setEnabled:YES];
+		[barItems.leftBarButtonItem setEnabled:YES];
 		mainCollectionView.scrollEnabled = YES;
 		[UIView animateWithDuration:0.5 animations:^{
 			[season setCenter:CGPointMake(self.view.center.x * 5, season.center.y)];
@@ -173,6 +178,8 @@
 			season = nil;
 			sample = nil;
 			aboutView = nil;
+			
+			[barItems.rightBarButtonItem setEnabled:YES];
 		}];
 	}//end lese
 }//end method
@@ -181,7 +188,6 @@
 	if(!CGPointEqualToPoint(ballCenter, CGPointZero)){
 		[UIView animateWithDuration:0.5 animations:^{
 			cell.alpha = prevAlpha;
-			[self.view bringSubviewToFront:mainBar];
 			for(UICollectionViewCell *c in mainCollectionView.subviews)
 				if(c.alpha >= 0.5f)
 					c.alpha = 0.95;
@@ -206,7 +212,6 @@
 		[UIView animateWithDuration:0.5 animations:^{
 			cell.alpha = 0.95;
 			[mainCollectionView bringSubviewToFront:cell];
-			[self.view bringSubviewToFront:mainCollectionView];
 			for(UICollectionViewCell *c in mainCollectionView.subviews)
 				if(![c isEqual:cell])
 					if(c.alpha >= 0.95f)
@@ -308,7 +313,7 @@
 	for(URPlace *p in places)
 		[p refreshDates];
 	
-	if(!aboutView)
+	if(!aboutView && !tappedBall)
 		[mainCollectionView reloadItemsAtIndexPaths:[mainCollectionView indexPathsForVisibleItems]];
 }//end method
 
@@ -367,6 +372,7 @@
 	
 	UICollectionViewCell *cell = [collectionView cellForItemAtIndexPath:indexPath];
 	last = ((URPlace *)[places objectAtIndex:indexPath.row]);
+	[self toggleBarButtonItems];
 	
 	if(!tappedBall){
 		tappedBall = cell;
