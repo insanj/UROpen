@@ -11,7 +11,7 @@
 #import "URViewController.h"
 
 @implementation URViewController
-@synthesize mainCollectionView, mainBar;
+@synthesize mainCollectionView, mainBar, tappedBall;
 
 #pragma mark - ViewController
 -(void)viewDidLoad{
@@ -185,6 +185,10 @@
 }//end method
 
 -(void)flipBall:(UICollectionViewCell *)cell{
+	if(aboutView)
+		return;
+	[self toggleBarButtonItems];
+
 	if(!CGPointEqualToPoint(ballCenter, CGPointZero)){
 		[UIView animateWithDuration:0.5 animations:^{
 			cell.alpha = prevAlpha;
@@ -372,10 +376,10 @@
 	
 	UICollectionViewCell *cell = [collectionView cellForItemAtIndexPath:indexPath];
 	last = ((URPlace *)[places objectAtIndex:indexPath.row]);
-	[self toggleBarButtonItems];
 	
 	if(!tappedBall){
 		tappedBall = cell;
+		tappedBall.tag = 5;
 		prevAlpha = cell.alpha;
 		[self flipBall:tappedBall];
 	}

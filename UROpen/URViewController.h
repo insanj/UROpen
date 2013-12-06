@@ -22,12 +22,12 @@
 	UILabel *season;
 	
 	CGPoint ballCenter;
-	UICollectionViewCell *tappedBall;
 	float prevAlpha;
 	
 	NSTimer *timer;
 }
 
 @property (strong, nonatomic) UICollectionView *mainCollectionView;
-@property (strong, nonatomic) URNavigationBar *mainBar;
+@property (strong, nonatomic) UINavigationBar *mainBar;
+@property (strong, nonatomic) UICollectionViewCell *tappedBall;
 @end

@@ -19,7 +19,7 @@
 }
 
 -(UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event{
-	if(point.y <= 23.5){
+	if(point.y <= 23.5 && !((URViewController *)self.window.rootViewController).tappedBall){
 		UICollectionView *mainCollectionView = (UICollectionView *)[self.superview viewWithTag:5];
 		[mainCollectionView scrollRectToVisible:CGRectMake(0, 0, 1, 1) animated:YES];
 	}
