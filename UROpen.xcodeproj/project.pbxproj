@@ -454,7 +454,7 @@
 		9E605C64184A6B6A00A6A429 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "UROpen/UROpen-Prefix.pch";
 				INFOPLIST_FILE = "UROpen/UROpen-Info.plist";
@@ -469,7 +469,7 @@
 		9E605C65184A6B6A00A6A429 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "UROpen/UROpen-Prefix.pch";
 				INFOPLIST_FILE = "UROpen/UROpen-Info.plist";

@@ -34,7 +34,7 @@
 	barItems.rightBarButtonItem = moreItem;
 	
 	mainBar.items = @[barItems];
-	[self setUndertitle:@"Fall 2013"];
+	[self setUndertitle:@"Spring 2013"];
 	[self.view addSubview:mainBar];
 
 	UICollectionViewFlowLayout *flowLayout = [[UICollectionViewFlowLayout alloc] init];
@@ -53,6 +53,11 @@
 	
 	timer = [NSTimer scheduledTimerWithTimeInterval:60 target:self selector:@selector(refreshPlaces) userInfo:nil repeats:YES];
 }//end method
+
+-(void)viewWillAppear:(BOOL)animated{
+	if(tappedBall)
+		mainCollectionView.scrollEnabled = NO;
+}
 
 -(void)didReceiveMemoryWarning{
     [super didReceiveMemoryWarning];
@@ -168,8 +173,10 @@
 	}//end if
 	
 	else{
+		if(CGPointEqualToPoint(ballCenter, CGPointZero))
+			mainCollectionView.scrollEnabled = YES;
+			
 		[barItems.leftBarButtonItem setEnabled:YES];
-		mainCollectionView.scrollEnabled = YES;
 		[UIView animateWithDuration:0.5 animations:^{
 			[season setCenter:CGPointMake(self.view.center.x * 5, season.center.y)];
 			[sample setCenter:CGPointMake(self.view.center.x * 5, sample.center.y)];
@@ -185,10 +192,6 @@
 }//end method
 
 -(void)flipBall:(UICollectionViewCell *)cell{
-	if(aboutView)
-		return;
-	[self toggleBarButtonItems];
-
 	if(!CGPointEqualToPoint(ballCenter, CGPointZero)){
 		[UIView animateWithDuration:0.5 animations:^{
 			cell.alpha = prevAlpha;
@@ -204,12 +207,18 @@
 			((UILabel *)[cell viewWithTag:4]).alpha = 1.0;
 		}];
 		
-		ballCenter = CGPointZero;
+		[((UINavigationItem *)(UINavigationItem *)mainBar.items[0]).leftBarButtonItem setEnabled:YES];
 		mainCollectionView.scrollEnabled = YES;
+		ballCenter = CGPointZero;
+		if(cell.motionEffects.count == 1)
+			cell.motionEffects = nil;
+		else
+			cell.motionEffects = @[cell.motionEffects[0]];
 		tappedBall = nil;
 	}//end if
 	
 	else{
+		[((UINavigationItem *)(UINavigationItem *)mainBar.items[0]).leftBarButtonItem setEnabled:NO];
 		mainCollectionView.scrollEnabled = NO;
 		ballCenter = cell.center;
 		
@@ -223,10 +232,13 @@
 			
 			cell.transform = CGAffineTransformMakeScale(-2, 2);
 			cell.center = CGPointMake(self.view.center.x, mainCollectionView.center.y + mainCollectionView.contentOffset.y);
+			
 			((UILabel *)[cell viewWithTag:2]).alpha = 0;
 			((UILabel *)[cell viewWithTag:3]).alpha = 0;
 			((UILabel *)[cell viewWithTag:4]).alpha = 0;
 		}];
+		
+		[cell addMotionEffect:[self motionEffectsWithMin:-15 andMax:15]];
 	}//end else
 	
 	/*UIAlertView *mapAV = [[UIAlertView alloc] initWithTitle:last.name message:@"Would you like to view this dining hall in Apple Maps?" delegate:self cancelButtonTitle:@"No Thanks" otherButtonTitles:@"Ok", nil];
@@ -362,6 +374,19 @@
 		return @((int)given).stringValue;
 }//end method
 
+-(UIMotionEffect *)motionEffectsWithMin:(float)min andMax:(float)max{
+	UIInterpolatingMotionEffect *xAxis = [[UIInterpolatingMotionEffect alloc] initWithKeyPath:@"center.x" type:UIInterpolatingMotionEffectTypeTiltAlongHorizontalAxis];
+	UIInterpolatingMotionEffect *yAxis = [[UIInterpolatingMotionEffect alloc] initWithKeyPath:@"center.y" type:UIInterpolatingMotionEffectTypeTiltAlongVerticalAxis];
+	
+	xAxis.minimumRelativeValue = yAxis.minimumRelativeValue = @(min);
+	xAxis.maximumRelativeValue = yAxis.maximumRelativeValue = @(max);
+	
+	UIMotionEffectGroup *group = [[UIMotionEffectGroup alloc] init];
+	group.motionEffects = @[xAxis, yAxis];
+	
+	return group;
+}
+
 #pragma mark - CollectionView
 -(NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView{
 	return 1;
@@ -391,6 +416,7 @@
 -(UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath{
 	static NSString *cellIdentifier = @"URCell";
     UICollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:cellIdentifier forIndexPath:indexPath];
+		
 	URPlace	*curr = [places objectAtIndex:indexPath.row];
 
 	if(curr.plan == URCampus){
@@ -405,11 +431,17 @@
 		((UILabel *)[cell viewWithTag:3]).text = @"unlimited";
 	}
 	
-	if(![curr openForDate:[NSDate date]])
+	if(![curr openForDate:[NSDate date]]){
 		cell.alpha = 0.3;
+		cell.contentView.motionEffects = nil;
+	}
 	
-	else
+	else{
 		cell.alpha = 0.95;
+		
+		if(cell.contentView.motionEffects.count == 0)
+			[cell addMotionEffect:[self motionEffectsWithMin:-10 andMax:10]];
+	}//end else
 	
     UILabel *titleLabel = (UILabel *)[cell viewWithTag:2];
 	titleLabel.adjustsFontSizeToFitWidth = YES;

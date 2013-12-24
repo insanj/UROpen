@@ -113,7 +113,6 @@
 			return [self open:firstOpenDateInNext andClosedDateToString:firstClosedDateInNext];
 		}//end if
 		
-		
 		for(NSArray *ww in w){
 			NSDate *open = ww[0];
 			NSDate *closed = ww[1];
@@ -138,7 +137,7 @@
 		return [self open:firstOpenDateInNext andClosedDateToString:firstClosedDateInNext];
 	}
 		
-	NSLog(@"pre full return");
+	//NSLog(@"looks like this window is set, returning...");
 	return [self open:best[0] andClosedDateToString:best[1]];
 }
 
