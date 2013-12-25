@@ -433,13 +433,13 @@
 	
 	if(![curr openForDate:[NSDate date]]){
 		cell.alpha = 0.3;
-		cell.contentView.motionEffects = nil;
+		cell.motionEffects = nil;
 	}
 	
 	else{
 		cell.alpha = 0.95;
 		
-		if(cell.contentView.motionEffects.count == 0)
+		if(cell.motionEffects.count == 0)
 			[cell addMotionEffect:[self motionEffectsWithMin:-10 andMax:10]];
 	}//end else
 	
